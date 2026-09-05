@@ -20,7 +20,7 @@ To build a professional full-stack web application using React and Flask as my f
 - Flask (Python)
 
 ### Database
-- PostgreSQL
+- MySQL
 
 ### Version Control
 - Git & GitHub
