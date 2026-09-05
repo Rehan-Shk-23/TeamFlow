@@ -58,7 +58,7 @@ function Dashboard() {
           <TaskColumn
             title="To Do"
             statusKey="todo"
-            badgeColor="bg-secondary"
+            badgeColor="bg-danger"
             count={tasks.filter((t) => t.status === 'todo').length}
             tasks={tasks.filter((t) => t.status === 'todo')}
             onTaskDrop={handleTaskDrop}
