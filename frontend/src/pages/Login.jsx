@@ -1,7 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function Login() {
+
+  // Used for Navigation Between Pages
+  const navigate = useNavigate();
 
   // Define State Variables
   const [email, setEmail] = useState('');
@@ -11,8 +15,8 @@ export default function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("Login Submitted :", {email, password});
-  }
+    navigate('/dashboard');
+  };
 
   return (
     // Page Wrapper: Centers the card vertically and horizontally
