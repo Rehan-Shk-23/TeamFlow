@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import TaskColumn from '../components/TaskColumn';
+import TaskModal from '../components/TaskModal';
 
 function Dashboard() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const [tasks, setTasks] = useState([
     {
       id: 1,
@@ -30,13 +33,21 @@ function Dashboard() {
     }
   ]);
 
-  // Handler triggered whenever a card is dropped into a column
   const handleTaskDrop = (taskId, targetStatus) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id === taskId ? { ...task, status: targetStatus } : task
       )
     );
+  };
+
+  const handleAddTask = (newTaskData) => {
+    const newTask = {
+      id: Date.now(), // Unique ID using timestamp until MySQL auto-increments
+      ...newTaskData,
+      status: 'todo' // New tasks always land in To Do first
+    };
+    setTasks((prev) => [newTask, ...prev]);
   };
 
   return (
@@ -49,7 +60,10 @@ function Dashboard() {
             <h4 className="fw-bold text-dark mb-1">Final Year Project Workspace</h4>
             <p className="text-secondary small mb-0">Track sprint progress and team tasks</p>
           </div>
-          <button className="btn btn-primary btn-sm px-3 shadow-sm">
+          <button 
+            className="btn btn-primary btn-sm px-3 shadow-sm"
+            onClick={() => setIsModalOpen(true)}
+          >
             + New Task
           </button>
         </div>
@@ -58,7 +72,7 @@ function Dashboard() {
           <TaskColumn
             title="To Do"
             statusKey="todo"
-            badgeColor="bg-danger"
+            badgeColor="bg-secondary"
             count={tasks.filter((t) => t.status === 'todo').length}
             tasks={tasks.filter((t) => t.status === 'todo')}
             onTaskDrop={handleTaskDrop}
@@ -81,6 +95,12 @@ function Dashboard() {
           />
         </div>
       </main>
+
+      <TaskModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddTask={handleAddTask}
+      />
     </div>
   );
 }
