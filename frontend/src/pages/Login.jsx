@@ -1,83 +1,131 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-
-export default function Login() {
-
-  // Used for Navigation Between Pages
-  const navigate = useNavigate();
-
-  // Define State Variables
+function Login() {
+  const [selectedRole, setSelectedRole] = useState('student'); // 'student' or 'faculty'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // Handle Form Submission
-  const handleSubmit = (e) => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleRoleChange = (role) => {
+    setSelectedRole(role);
+    setErrorMessage('');
+    // Auto-fill demo credentials for quick testing
+    if (role === 'student') {
+      setEmail('rehan@teamflow.edu');
+      setPassword('123456');
+    } else {
+      setEmail('faculty@teamflow.edu');
+      setPassword('123456');
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage('');
+    setLoading(true);
 
-    navigate('/dashboard');
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role: selectedRole })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        login(data.user);
+        navigate('/dashboard');
+      } else {
+        setErrorMessage(data.message || 'Login failed.');
+      }
+    } catch (err) {
+      setErrorMessage('Cannot connect to TeamFlow backend server.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    // Page Wrapper: Centers the card vertically and horizontally
-    <div className="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      
-      {/* Login Card Box */}
-      <div className="card shadow-sm p-4" style={{ maxWidth: '400px', width: '100%' }}>
-        
-        {/* 1. Header Section */}
+    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+      <div className="card shadow-sm border-0 p-4" style={{ width: '420px', borderRadius: '12px' }}>
         <div className="text-center mb-4">
-          <h3 className="fw-bold text-primary mb-1">TeamFlow</h3>
-          <p className="text-muted small">Sign in to your account</p>
+          <h2 className="fw-bold text-primary mb-1">TeamFlow</h2>
+          <p className="text-muted small">Academic Project Management Platform</p>
         </div>
 
-        {/* 2. Login Form */}
+        {/* Role Toggle Tabs */}
+        <div className="d-flex p-1 mb-4 bg-light rounded border">
+          <button
+            type="button"
+            className={`btn btn-sm flex-fill fw-semibold ${
+              selectedRole === 'student' ? 'btn-primary shadow-sm' : 'btn-light text-muted'
+            }`}
+            onClick={() => handleRoleChange('student')}
+          >
+            🎓 Student Portal
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm flex-fill fw-semibold ${
+              selectedRole === 'faculty' ? 'btn-primary shadow-sm' : 'btn-light text-muted'
+            }`}
+            onClick={() => handleRoleChange('faculty')}
+          >
+            👨‍🏫 Faculty Portal
+          </button>
+        </div>
+
+        {errorMessage && (
+          <div className="alert alert-danger py-2 small" role="alert">
+            {errorMessage}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
-          
-          {/* Email Input Block */}
           <div className="mb-3">
-            <label className="form-label small fw-semibold">Email address</label>
+            <label className="form-label small fw-semibold">
+              {selectedRole === 'student' ? 'Student Email' : 'Faculty / Staff Email'}
+            </label>
             <input
               type="email"
               className="form-control"
-              placeholder="name@example.com"
+              placeholder={selectedRole === 'student' ? 'rehan@teamflow.edu' : 'faculty@teamflow.edu'}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
 
-          {/* Password Input Block */}
-          <div className="mb-3">
+          <div className="mb-4">
             <label className="form-label small fw-semibold">Password</label>
             <input
               type="password"
               className="form-control"
-              placeholder="••••••••"
+              placeholder="••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
 
-          {/* Submit Button */}
-          <button type="submit" className="btn btn-primary w-100 mt-2">
-            Sign In
+          <button
+            type="submit"
+            className="btn btn-primary w-100 py-2 fw-semibold"
+            disabled={loading}
+          >
+            {loading ? 'Authenticating...' : `Sign In as ${selectedRole === 'student' ? 'Student' : 'Faculty'}`}
           </button>
-
         </form>
-
-        {/* 3. Footer / Register Link */}
-        <div className="text-center mt-4">
-          <p className="text-secondary small mb-0">
-            Don't have an account?{' '}
-            <span className="text-primary text-decoration-underline" role="button">
-              Register
-            </span>
-          </p>
-        </div>
-
       </div>
     </div>
   );
 }
+
+export default Login;
